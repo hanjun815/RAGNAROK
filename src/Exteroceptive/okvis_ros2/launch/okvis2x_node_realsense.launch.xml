@@ -1,0 +1,61 @@
+<launch>
+    <arg name="rpg" default="false" />
+    <arg name="rgb" default="false" />
+    <arg name="config_filename" default="" />
+    <arg name="se_config_filename" default="" />
+    <arg name="csv_path" default="/tmp/"/>
+    <arg name="rs_rgb_exposure" default="100.0"/>
+    <arg name="republish_images" default="true"/>
+    <arg name="mesh_cutoff_z" default="2.5"/>
+    <arg name="save_submap_meshes" default="false"/>
+    <arg name="rviz" default="true"/>
+    <arg name="mesh" default="realsense.dae"/>
+    <arg name="depth_image" default="false"/>
+    <arg name="stereo_network" default="false"/>
+    <arg name="depth_fusion" default="false"/>
+    <set_env name="OMP_NUM_THREADS" value="2"/>
+    <!-- Add mesh for RVIZ visualization. In case you are using a different mesh, you will have to adjust
+         the IMU-to-body extrinsics (T_BS) in the okvis2 config file -->
+
+    <node pkg="okvis" exec="okvis2x_node_realsense" name="okvis" namespace="okvis" if="$(var depth_image)">
+        <!-- Set the State publishing rate to value > 0.0 if state publishing needed -->
+        <param name="imu_propagated_state_publishing_rate" type="float" value="40.0"/>
+        <param name="realsense_rgb_exposure" type="float" value="$(var rs_rgb_exposure)"/>
+        <param name="republish_images" value="$(var republish_images)"/>
+        <param name="config_filename" value="$(var config_filename)"/>
+        <param name="se_config_filename" value="$(var se_config_filename)"/>
+        <param name="csv_path" value="$(var csv_path)"/>
+        <param name="mesh_cutoff_z" type="float" value="$(var mesh_cutoff_z)"/>
+        <param name="save_submap_meshes" value="$(var save_submap_meshes)"/>
+        <param name="mesh_file" value="file://$(find-pkg-share okvis)/resources/meshes/$(var mesh)"/>
+    </node>
+
+    <node pkg="okvis" exec="okvis2x_stereo_network_node_realsense" name="okvis" namespace="okvis" if="$(var stereo_network)">
+        <!-- Set the State publishing rate to value > 0.0 if state publishing needed -->
+        <param name="imu_propagated_state_publishing_rate" type="float" value="40.0"/>
+        <param name="realsense_rgb_exposure" type="float" value="$(var rs_rgb_exposure)"/>
+        <param name="republish_images" value="$(var republish_images)"/>
+        <param name="config_filename" value="$(var config_filename)"/>
+        <param name="se_config_filename" value="$(var se_config_filename)"/>
+        <param name="csv_path" value="$(var csv_path)"/>
+        <param name="mesh_cutoff_z" type="float" value="$(var mesh_cutoff_z)"/>
+        <param name="save_submap_meshes" value="$(var save_submap_meshes)"/>
+        <param name="mesh_file" value="file://$(find-pkg-share okvis)/resources/meshes/$(var mesh)"/>
+    </node>
+
+    <node pkg="okvis" exec="okvis2x_depthfusion_network_node_realsense" name="okvis" namespace="okvis" if="$(var depth_fusion)">
+        <!-- Set the State publishing rate to value > 0.0 if state publishing needed -->
+        <param name="imu_propagated_state_publishing_rate" type="float" value="40.0"/>
+        <param name="realsense_rgb_exposure" type="float" value="$(var rs_rgb_exposure)"/>
+        <param name="republish_images" value="$(var republish_images)"/>
+        <param name="config_filename" value="$(var config_filename)"/>
+        <param name="se_config_filename" value="$(var se_config_filename)"/>
+        <param name="csv_path" value="$(var csv_path)"/>
+        <param name="mesh_cutoff_z" type="float" value="$(var mesh_cutoff_z)"/>
+        <param name="save_submap_meshes" value="$(var save_submap_meshes)"/>
+        <param name="mesh_file" value="file://$(find-pkg-share okvis)/resources/meshes/$(var mesh)"/>
+    </node>
+
+    <node pkg="rviz2" exec="rviz2" name="rviz2" namespace="okvis" args="-d $(find-pkg-share okvis)/config/rviz2/rviz2_okvis2x_config.rviz" if="$(var rviz)"/>
+        
+</launch>

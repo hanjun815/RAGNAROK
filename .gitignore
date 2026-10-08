@@ -1,0 +1,34 @@
+# Build products and local ROS state.
+build/
+install/
+log/
+.colcon/
+.ros/
+CMakeFiles/
+CMakeCache.txt
+cmake-build-*/
+/src/Proprioceptive/thirdparty/ctraj-build/
+/src/Proprioceptive/thirdparty/ctraj-install/
+/src/Proprioceptive/thirdparty/ctraj/thirdparty/tiny-viewer-build/
+/src/Proprioceptive/thirdparty/ctraj/thirdparty/tiny-viewer-install/
+
+# Downloaded by the okvis build (src/Exteroceptive/CMakeLists.txt).
+/src/Exteroceptive/resources/mvs-model.pt
+
+# Python caches and editor state.
+__pycache__/
+*.py[cod]
+.vscode/
+.idea/
+.DS_Store
+
+# Local datasets and generated trajectories/maps.
+/results/
+/fullBa.png
+/data/
+/.xauth*
+
+# Local credentials.
+.env
+.env.*
+!.env.example

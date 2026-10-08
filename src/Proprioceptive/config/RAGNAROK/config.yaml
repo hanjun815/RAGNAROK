@@ -1,0 +1,129 @@
+Configor:
+  DataStream:
+    IMUTopic: /imu/data
+    IMUMsgType: SENSOR_IMU
+    RadarTopic: /ti_mmwave_0/radar_scan_pcl
+    RadarTopic1: /ti_mmwave_1/radar_scan_pcl
+    # Enable each radar independently. Both may be false (IMU + leg only mode).
+    UseRadar0: true
+    UseRadar1: true
+    UseLeg: true
+    FootTopic : /status/feet
+    JointStateTopic : /joint_states
+    LegSplineTopic: /garlileo/spline_state
+    RadarMsgType: GARLILEO
+    OutputPath: /root/code/RAGNAROK/results  # please set your output path here
+    CalibParam:
+      # Radar0 extrinsics
+      POS_RinB:
+        r0c0: 0.005158
+        r1c0: 0.002112
+        r2c0: -0.090193
+      SO3_RtoB:
+        qx: -0.00546460
+        qy: -0.00590713
+        qz: 0.00792876
+        qw: 0.99993619
+      # Radar1 extrinsics (second radar, 90-degree rolled)
+      SO3_R1toB:
+        qx: -0.70662313
+        qy: 0.01652776
+        qz: -0.02614972
+        qw: 0.70691356
+      POS_R1inB:
+        r0c0: 0.003002
+        r1c0: -0.001254
+        r2c0: -0.146143
+      SO3_BtoL:
+        qx: 0.00000000
+        qy: -0.00261799
+        qz: 0.00000000
+        qw: 0.99999657
+      POS_BinL:
+        r0c0: -0.10
+        r1c0: 0.0
+        r2c0: 0.11
+      TIME_OFFSET_RtoB: 0.0
+      TIME_OFFSET_R1toB: 0.0
+      TIME_OFFSET_BtoL: 0.0
+  Prior:
+    GravityNorm: 9.81
+    GravityDirection : -1.0 # when z axis of IMU is upward, use -1.0; when downward, use 1.0
+    SO3SplineKnotDist: 0.05
+    VelSplineKnotDist: 0.05
+    GravSplineKnotDist : 0.05
+    AcceWeight: 170.68
+    AcceBiasRandomWalk: 4.0E-4
+    GyroWeight: 5730.66
+    GyroBiasRandomWalk: 2.0E-5
+    RadarWeight: 200
+    CauchyLossForRadarFactor: 0.1
+    RadarDopplerNoiseStd: 0.05
+    RadarAzimuthNoiseBase: 0.05
+    RadarElevationNoiseBase: 0.066
+    RadarSpatialDegradationCoeff: 0.5
+    RadarUseKAOC: true
+    RotGravWeight: 10.00
+    GravityWeight: 175.00
+    LegWeight: 2000
+    LegEncoderPosSigma: 0.001
+    LegEncoderVelSigma: 0.005
+    LegInterLegCovarianceScale: 1.0
+    LegForceDiscontinuityScale: 0.001
+    LegStanceAgeCovarianceScale: 0.01
+    LegStanceAgeFloorSec: 0.02
+    LegVelocityCovarianceFloor: 1.0e-4
+    LegOmegaStaleSec: 0.01
+    LegDynamicWeightEnable: true
+    LegDynamicWeightReferenceCovTrace: 0.1
+    LegDynamicWeightMinScale: 0.8
+    LegDynamicWeightMaxScale: 1.5
+    # -----------------------------------------
+    # Spherical-foot rolling contact compensation
+    # -----------------------------------------
+    LegRollingContactEnable: true
+    LegRollingContactFootRadius: 0.03
+    # -----------------------------
+    # Online radar-IMU calibration
+    # -----------------------------
+    RadarImuOnlineCalibEnable: true
+    RadarImuOnlineCalibOptimizeSO3_RtoB: true
+    RadarImuOnlineCalibOptimizePOS_RinB: true
+    RadarImuOnlineCalibOptimizeTO_RtoB: true   # iKalibr-style temporal calibration
+    RadarImuOnlineCalibPriorWeightSO3: 1.0e5
+    RadarImuOnlineCalibPriorWeightPOS: 1.0e5
+    RadarImuOnlineCalibPriorWeightTO: 1.0e5
+    RadarImuOnlineCalibTOMaxAbs: 0.020
+    # Second radar online calibration (only used when UseRadar1: true)
+    Radar1ImuOnlineCalibEnable: true
+    Radar1ImuOnlineCalibOptimizeSO3_R1toB: true
+    Radar1ImuOnlineCalibOptimizePOS_R1inB: true
+    Radar1ImuOnlineCalibOptimizeTO_R1toB: true
+    Radar1ImuOnlineCalibPriorWeightSO3: 1.0e5
+    Radar1ImuOnlineCalibPriorWeightPOS: 1.0e5
+    Radar1ImuOnlineCalibPriorWeightTO: 1.0e5
+    Radar1ImuOnlineCalibTOMaxAbs: 0.020
+    # -----------------------------
+    # Online leg-IMU calibration
+    # -----------------------------
+    LegImuOnlineCalibEnable: true
+    LegImuOnlineCalibOptimizeSO3_BtoL: true
+    LegImuOnlineCalibOptimizePOS_BinL: true
+    LegImuOnlineCalibOptimizeTO_BtoL: true
+    LegImuOnlineCalibPriorWeightSO3: 1.0e5
+    LegImuOnlineCalibPriorWeightPOS: 1.0e5
+    LegImuOnlineCalibPriorWeightTO: 1.0e5
+    LegImuOnlineCalibTOMaxAbs: 0.005
+    # -----------------------------------------
+    # Online calibration logging
+    # -----------------------------------------
+    OnlineCalibLogEveryNWindows: 20  # 0 disables periodic logging
+  Preference:
+    IMUMsgQueueSize: 400
+    RadarMsgQueueSize: 200
+    FootMsgQueueSize : 800
+    JointStateMsgQueueSize: 800
+    IncrementalOptRate: 50  # Rate of incremental optimization [Hz]
+    PublishRate: 50          # Publishing rate for spline state and odometry [Hz]. Independent of IncrementalOptRate.
+    SplineStateSafetyLagSec: 0.25  # Delay exact-stamp /garlileo/spline_state until the spline tail is stable. Keep OKVIS wait_max_sec larger.
+    OutputResultsWithTimeAligned: false

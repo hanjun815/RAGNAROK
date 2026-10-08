@@ -1,0 +1,28 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: supereight
+
+Files: doc/*.jpeg
+Copyright: 2021 Smart Robotics Lab, Imperial College London, Technical University of Munich
+License: CC-BY-4.0
+
+Files: test/system/multires_ofusion/dataset/depth/* test/system/multires_ofusion/dataset/rgb/*
+Copyright: 2014 Imperial College London, National University of Ireland, Maynooth
+License: CC-BY-3.0
+
+Files: .gitmodules doc/custom.css
+Copyright: 2021 Smart Robotics Lab, Imperial College London, Technical University of Munich
+License: CC0-1.0
+
+Files: third_party/googletest/*
+Copyright: 2008-2021, Google Inc.
+License: BSD-3-Clause
+
+Files: third_party/srl_projection/*
+Copyright: 2015 Autonomous Systems Lab, ETH Zurich
+	2015-2021 Stefan Leutenegger
+	2020-2021 Smart Robotics Lab, Imperial College London, Technical University of Munich
+License: BSD-3-Clause
+
+Files: include/se/external/tinycolormap.hpp
+Copyright: 2018-2020 Yuki Koyama
+License: MIT

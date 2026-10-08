@@ -1,0 +1,12 @@
+get_filename_component(SRLPROJECTION_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+include(CMakeFindDependencyMacro)
+
+find_dependency(Eigen3)
+find_dependency(OpenCV)
+
+if(NOT TARGET SRL::Projection)
+	include("${SRLPROJECTION_CMAKE_DIR}/SRLProjectionTargets.cmake")
+endif()
+
+set(SRL_PROJECTION_LIBRARIES SRL::Projection)
+

@@ -1,0 +1,183 @@
+%YAML:1.0
+cameras:
+     - {T_SC:
+        [  0.004135,   0.008375,   0.999956,   0.032323,
+          -0.999968,  -0.006813,   0.004192,   0.057504,
+           0.006848,  -0.999942,   0.008346,  -0.003287,
+           0.000000,   0.000000,   0.000000,   1.000000],
+        image_dimension: [640, 480],
+        distortion_coefficients: [0.00610061, 0.00138907, 0.0, 0.0],
+        distortion_type: radialtangential,
+        focal_length: [390.864, 391.179],
+        principal_point: [327.744, 236.336],
+        cam_model: pinhole,
+        camera_type: gray, #gray, rgb, gray+depth, rgb+depth
+        mapping: true,
+        mapping_rectification: true,
+        slam_use: okvis} #none, okvis, okvis-depth, okvis-virtual
+
+     - {T_SC:
+        [  0.004137,   0.008376,   0.999956,   0.032710,
+          -0.999968,  -0.006811,   0.004194,  -0.036300,
+           0.006846,  -0.999942,   0.008348,  -0.002646,
+           0.000000,   0.000000,   0.000000,   1.000000],
+        image_dimension: [640, 480],
+        distortion_coefficients: [0.0118107, -0.00669383, 0.0, 0.0],
+        distortion_type: radialtangential,
+        focal_length: [390.325, 390.568],
+        principal_point: [327.94, 236.357],
+        cam_model: pinhole,
+        camera_type: gray, #gray, rgb, gray+depth, rgb+depth
+        mapping_rectification: true,
+        slam_use: okvis} #none, okvis, okvis-depth, okvis-virtual
+
+# additional camera parameters
+camera_parameters:
+    timestamp_tolerance: 0.005 # [s] stereo frame out-of-sync tolerance
+    sync_cameras: [0, 1] # the cameras that will be synchronised
+    image_delay: -0.0065 # [s] timestamp_camera_correct = timestamp_camera - image_delay
+    online_calibration: # some parameters to set the online 
+        do_extrinsics: true # Do we online-calibrate extrinsics?
+        do_extrinsics_final_ba: true
+        sigma_r: 0.002 # T_SCi position prior stdev [m]
+        sigma_alpha: 0.002 # T_SCi orientation prior stdev [rad]
+        sigma_r_final_ba: 0.03 # T_SCi position prior stdev in final BA [m]
+        sigma_alpha_final_ba: 0.3 # T_SCi orientation prior stdev in final BA [rad]
+    deep_stereo_indices: [0,1] # [left, right] camera indices for the stereo network
+    fov_scale: 1.0 # Divisor for new focal length which is only used when fisheye stereo rectification for dense mapping.
+
+# the IMU sensor model
+imu_parameters:
+    use: true # enable IMU
+    use_preintegration_residual: true # enable nonlinear IMU preintegration residuals (ImuError). Set false to disable.
+    a_max: 160.0 # acceleration saturation [m/s^2]
+    g_max: 10.0 # gyro saturation [rad/s]
+    estimate_gyro_bias: false
+    estimate_accel_bias: true
+    sigma_g_c: 0.00278 # gyro noise density [rad/s/sqrt(Hz)]
+    sigma_bg: 0.03 # gyro bias prior [rad/s]
+    sigma_a_c: 0.0252 # accelerometer noise density [m/s^2/sqrt(Hz)]
+    sigma_ba: 0.01 # accelerometer bias prior [m/s^2]
+    sigma_gw_c: 0.0008 # gyro drift noise density [rad/s^s/sqrt(Hz)]
+    sigma_aw_c: 0.004 # accelerometer drift noise density [m/s^2/sqrt(Hz)]
+    a0: [ 0.0, 0.0, 0.0 ] # Initial accelerometer bias [m/s^2]
+    g0: [ 0.0, 0.0, 0.0 ] # Initial gyro bias [rad/s]
+    s_a: [ 1.0,  1.0, 1.0 ] # scale factor for accelerometer measurements: a_true = s_a * a_meas + b_a
+    g: 9.81 # Earth's acceleration due to gravity [m/s^2]
+    T_BS: 
+        [ 1.0, 0.0, 0.0, 0.0,
+          0.0, 1.0, 0.0, 0.0,
+          0.0, 0.0, 1.0, 0.0,
+          0.0, 0.0, 0.0, 1.0 ]
+
+# frontend: detection etc. 
+frontend_parameters:
+    detection_threshold: 30.0 # detection threshold. By default the uniformity radius in pixels
+    absolute_threshold: 5.0 # absolute Harris corner threshold (noise floor)
+    matching_threshold: 60.0 # BRISK descriptor matching threshold
+    octaves: 0 # number of octaves for detection. 0 means single-scale at highest resolution
+    max_num_keypoints: 1500 # maximum number of keypoints per image (strongest ones)
+    keyframe_overlap: 0.55 # minimum field-of-view overlap
+    use_cnn: false # whether to use the segmentation CNN
+    parallelise_detection: true
+    num_matching_threads: 3
+    vignette_correction_enable: true
+    vignette_correction_k1: 0.0
+    vignette_correction_k2: 0.0
+    vignette_correction_k3: 0.01
+    agcwd_clahe_bo_enable: true
+    agcwd_clahe_bo_utility_discrepancy_threshold: 1.0
+    agcwd_clahe_bo_initial_samples: 1
+    agcwd_clahe_bo_iterations: 3
+    agcwd_clahe_bo_candidate_grid: 4
+    agcwd_clahe_bo_agcwd_min: 0.1
+    agcwd_clahe_bo_agcwd_max: 0.8
+    agcwd_clahe_bo_clahe_min: 1.0
+    agcwd_clahe_bo_clahe_max: 6.0
+    agcwd_clahe_bo_image_utility_weight: 1.0
+    agcwd_enable: true
+    agcwd_weighting_param: 0.3
+    clahe_enable: true
+    clahe_clip_limit: 2.0
+    clahe_tile_grid_size: 8
+    image_utility_ewg_resize_enable: true
+    image_utility_ewg_resize_max_side: 320
+
+# estimator parameters
+estimator_parameters:
+    num_keyframes: 5 # number of keyframes in optimisation window
+    num_loop_closure_frames: 5 # number of loop closure frames in optimisation window
+    num_imu_frames: 10 # number of frames linked by most recent nonlinear IMU error terms
+    do_loop_closures: false # whether to do VI-SLAM or VIO
+    do_final_ba: false # Whether to run a full final BA
+    enforce_realtime: false # whether to limit the time budget for optimisation
+    realtime_min_iterations: 3 # minimum number of iterations always performed
+    realtime_max_iterations: 8 # never do more than these, even if not converged
+    realtime_time_limit: 0.5 # time budget for realtime optimisation [s]
+    realtime_num_threads: 6 # number of threads for the realtime optimisation
+    full_graph_iterations: 15 # don't do more than these for the full (background) optimisation
+    full_graph_num_threads: 1 # number of threads for the full (background) optimisation
+    p_dbow: 0.3 # Match threshold for dBoW -- unfortunately this varies with setups.
+    drift_percentage_heuristic: 1.5 # % allowed drift in loop closures rel. to dist. travelled.
+
+# some options for how and what to output
+output_parameters:
+    display_topview: false # Displays top view of the trajectory. Might become slow for long sequences.
+    display_matches: false  # displays debug video and matches. May be slow.
+    display_overhead: false # debug overhead image. Is slow.
+    enable_submapping: true
+
+# GaRLILEO spline coupling (auto; adds between-frame relative pose constraints from /garlileo/spline_state)
+garlileo_parameters:
+    history_sec: 3.0
+    use_rotation: true       # if true, include rotation in GaRLILEO between factor (k-1,k)
+    use_translation: true    # use translation part of between constraint (k-1,k)
+    use_velocity: true       # use velocity constraint
+    rotation_roll_pitch_std_deg: 0.8 # trust GaRLILEO gravity-constrained roll/pitch more strongly [deg]
+    rotation_yaw_std_deg: 0.8        # yaw is less constrained by gravity [deg]
+    translation_std: 0.5    # 1-sigma translation std for between-frame constraint [m]
+    velocity_std: 1.0        # 1-sigma velocity std for ego velocity constraint [m/s]
+    std_scale_use_tracking_quality: true  # if true, scale nominal std by sqrt(max(trackingQuality, floor))
+    std_scale_min_tracking_quality: 0.1
+    max_time_diff: 0.01      # maximum time difference between GaRLILEO and OKVIS [s]
+    frontend_max_age_sec: 0.01      # max |dt| allowed for last GaRLILEO measurement used in frontend [s]
+    keyframe_stationary_speed_threshold: 0.05 # [m/s] if >0: block keyframe insertion when |v_garlileo| < threshold
+    image_utility_threshold: 55.0
+    image_utility_semi_threshold: 60.0
+    image_utility_blend_sigmoid_steepness: 5.0  # larger => sharper transition in [threshold, semi]
+    image_utility_blend_hysteresis: 0.5         # utility deadband for blend smoothing
+    tracking_lost_quality_threshold: 0.2
+
+    # Relative-pose fallback (optional): when (low_features || tracking lost), add a strong GaRLILEO relative pose constraint (between factor).
+    pose_fallback_enable: true
+    pose_fallback_translation_std: 0.00001   # [m] smaller => stronger
+    pose_fallback_rotation_roll_pitch_std_deg: 0.00001 # [deg] stronger roll/pitch during fallback
+    pose_fallback_rotation_yaw_std_deg: 0.00001        # [deg] yaw fallback std
+    pose_fallback_weight: 100000.0            # unitless multiplier on the pose prior information
+    pose_fallback_velocity_std: 0.00001      # [m/s] if >0: use this std for velocity/speed prior during fallback (<=0 => use velocity_std)
+
+    # Visual fallback (optional): when (low_features || tracking lost), downweight camera reprojection factors.
+    visual_fallback_downweight_enable: true
+    visual_fallback_reprojection_information_scale: 1.0 # <1 => less trust in camera factors (e.g., 0.01 = 100x weaker)
+    visual_fallback_relpose_information_scale: 0.01 # Multiplier on marginalised visual relative-pose constraints (TwoPoseGraphError).
+    visual_fallback_submap_information_scale: 0.01  # Multiplier on submap alignment factor information (per-point info).
+
+    landmark_motion_consistency_enable: true
+
+    visual_fallback_garlileo_force_between: true
+    visual_fallback_garlileo_wait_max_sec: 0.0
+    visual_fallback_garlileo_wait_poll_period_ms: 5
+
+    between_backfill_enable: true
+    between_backfill_max_pairs: 10
+    between_backfill_overwrite_on_quality_improvement: false
+
+    # Radar-assisted place recognition (loop closure candidate ranking).
+    place_recognition_radar0_enable: true
+    place_recognition_radar1_enable: true
+    place_recognition_radar_max_time_diff: 0.1 # max |dt| for radar scan association [s]
+    place_recognition_radar_scans_per_radar: 3 # scans aggregated per enabled radar (2 => up to total 4 scans when radar0+radar1 enabled)
+    place_recognition_radar0_POS_RinB: [ 0.005158, 00.002112, -0.090193 ] # radar0 position in body frame B [m]
+    place_recognition_radar0_SO3_RtoB: [ -0.00546460, -0.00590713, 0.00792876, 0.99993619 ] # quaternion [qx,qy,qz,qw], rotation R0->B
+    place_recognition_radar1_POS_RinB: [ 0.003002, -0.001254, -0.146143 ] # radar1 position in body frame B [m]
+    place_recognition_radar1_SO3_RtoB: [ -0.70662313, 0.01652776, -0.02614972, 0.70691356 ] # quaternion [qx,qy,qz,qw], rotation R1->B

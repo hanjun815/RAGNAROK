@@ -1,0 +1,357 @@
+\documentclass[12pt, onecolumn]{article}
+\setlength\paperwidth{23cm}
+% 引入相关的包
+\usepackage{amsmath, listings, fontspec, geometry, graphicx, ctex, color, subfigure, amsfonts, amssymb}
+\usepackage{multirow}
+\usepackage[table,xcdraw]{xcolor}
+\usepackage[ruled]{algorithm2e}
+\usepackage[hidelinks]{hyperref}
+\hypersetup{
+	colorlinks=true,
+	linkcolor=red,
+	citecolor=red,
+}
+
+% 设定页面的尺寸和比例
+\geometry{left = 1.5cm, right = 1.5cm, top = 1.5cm, bottom = 1.5cm}
+
+% 设定两栏之间的间距
+\setlength\columnsep{1cm}
+
+% 设定字体，为代码的插入作准备
+\newfontfamily\ubuntu{Ubuntu Mono}
+\newfontfamily\consolas{Consolas}
+
+% 头部信息
+\title{\normf{RIC时空标定方法}}
+\author{\normf{陈烁龙}}
+\date{\normf{\today}}
+
+% 代码块的风格设定
+\lstset{
+	language=C++,
+	basicstyle=\scriptsize\ubuntu,
+	keywordstyle=\textbf,
+	stringstyle=\itshape,
+	commentstyle=\itshape,
+	numberstyle=\scriptsize\ubuntu,
+	showstringspaces=false,
+	numbers=left,
+	numbersep=8pt,
+	tabsize=2,
+	frame=single,
+	framerule=1pt,
+	columns=fullflexible,
+	breaklines,
+	frame=shadowbox, 
+	backgroundcolor=\color[rgb]{0.97,0.97,0.97}
+}
+
+% 字体族的定义
+% \fangsong \songti \heiti \kaishu
+\newcommand\normf{\fangsong}
+\newcommand\boldf{\heiti}
+\newcommand\keywords[1]{\boldf{关键词：} \normf #1}
+
+\newcommand\liehat[1]{\left[ #1 \right]_\times}
+\newcommand\lievee[1]{\left[ #1 \right]^\vee}
+\newcommand\liehatvee[1]{\left[ #1 \right]^\vee_\times}
+
+\newcommand\mynote[1]{{\bf{\emph{\textcolor{blue}{* \normf{#1} ...}}}}}
+
+\newcommand\mlcomment[1]{\iffalse #1 \fi}
+%\newcommand\mlcomment[1]{ #1 }
+
+\newcommand\bsm[1]{\boldsymbol{\mathrm{#1}}}
+\newcommand\rotation[2]{{\bsm{R}_{#1}^{#2}}}
+\newcommand\quaternion[2]{{\bsm{q}_{#1}^{#2}}}
+\newcommand\angvel[2]{{\bsm{\omega}_{#1}^{#2}}}
+\newcommand\translation[2]{{\bsm{p}_{#1}^{#2}}}
+\newcommand\translationhat[2]{{\hat{\bsm{p}}_{#1}^{#2}}}
+\newcommand\linvel[2]{{\bsm{v}_{#1}^{#2}}}
+\newcommand\linacce[2]{{\bsm{a}_{#1}^{#2}}}
+\newcommand\gravity[1]{{\bsm{g}^{#1}}}
+\newcommand\smallminus{{\text{-}}}
+\newcommand\smallplus{{\text{+}}}
+\newcommand\coordframe[1]{\underrightarrow{\mathcal{F}}_{#1}}
+
+\begin{document}
+	
+	% 插入头部信息
+	\maketitle
+	% 换页
+	\thispagestyle{empty}
+	\clearpage
+	
+	% 插入目录、图、表并换页
+	\pagenumbering{roman}
+	\tableofcontents
+	\newpage
+	\listoffigures
+	\newpage
+	\listoftables
+	% 罗马字母形式的页码
+	
+	\clearpage
+	% 从该页开始计数
+	\setcounter{page}{1}
+	% 阿拉伯数字形式的页码
+	\pagenumbering{arabic}
+	
+	
+	\section{\normf{Radar Static Measurement (V1)}}
+	The continuous-time trajectory is the one of other sensor (e.g., IMU), we have:
+	\begin{equation}
+	{^{b_0}\boldsymbol{p}_t}={^{b_0}_{b}\boldsymbol{R}(\tau)}\cdot{^{b}\boldsymbol{p}_t(\tau)}+{^{b_0}\boldsymbol{p}_{b}(\tau)}
+	\end{equation}
+	with
+	\begin{equation}
+	{^{b}\boldsymbol{p}_t(\tau)}={^{b}_{r}\boldsymbol{R}}\cdot{^{r}\boldsymbol{p}_t(\tau)}+{^{b}\boldsymbol{p}_{r}}
+	\end{equation}
+	then
+	\begin{equation}
+	{^{b_0}\boldsymbol{p}_t}={^{b_0}_{b}\boldsymbol{R}(\tau)}\cdot{^{b}_{r}\boldsymbol{R}}\cdot{^{r}\boldsymbol{p}_t(\tau)}
+	+{^{b_0}_{b}\boldsymbol{R}(\tau)}\cdot{^{b}\boldsymbol{p}_{r}}
+	+{^{b_0}\boldsymbol{p}_{b}(\tau)}
+	\end{equation}
+	differentiate
+	\begin{equation}
+	{^{b_0}\dot{\boldsymbol{p}}_t}=\boldsymbol{0}_{3\times 1}=
+	-\liehat{{^{b_0}_{b}\boldsymbol{R}(\tau)}\cdot{^{b}_{r}\boldsymbol{R}}\cdot{^{r}\boldsymbol{p}_t(\tau)}}\cdot{^{b_0}_{b}\dot{\boldsymbol{R}}(\tau)}
+	+{^{b_0}_{b}\boldsymbol{R}(\tau)}\cdot{^{b}_{r}\boldsymbol{R}}\cdot{^{r}\dot{\boldsymbol{p}}_t(\tau)}
+	-\liehat{{^{b_0}_{b}\boldsymbol{R}(\tau)}\cdot{^{b}\boldsymbol{p}_{r}}}\cdot{^{b_0}_{b}\dot{\boldsymbol{R}}(\tau)}
+	+{^{b_0}\dot{\boldsymbol{p}}_{b}(\tau)}
+	\end{equation}
+	\begin{equation}
+	\boldsymbol{0}_{3\times 1}=
+	-\liehat{{^{b}_{r}\boldsymbol{R}}\cdot{^{r}\boldsymbol{p}_t(\tau)}}\cdot{^{b_0}_{b}\boldsymbol{R}^\top(\tau)}\cdot{^{b_0}_{b}\dot{\boldsymbol{R}}(\tau)}
+	+{^{b}_{r}\boldsymbol{R}}\cdot{^{r}\dot{\boldsymbol{p}}_t(\tau)}
+	-\liehat{{^{b}\boldsymbol{p}_{r}}}\cdot{^{b_0}_{b}\boldsymbol{R}^\top(\tau)}\cdot{^{b_0}_{b}\dot{\boldsymbol{R}}(\tau)}
+	+{^{b_0}_{b}\boldsymbol{R}^\top(\tau)}\cdot{^{b_0}\dot{\boldsymbol{p}}_{b}(\tau)}
+	\end{equation}
+	\begin{equation}
+	\boldsymbol{0}_{3\times 1}=
+	-\liehat{{^{r}\boldsymbol{p}_t(\tau)}}\cdot{^{b}_{r}\boldsymbol{R}^\top}\cdot{^{b_0}_{b}\boldsymbol{R}^\top(\tau)}\cdot{^{b_0}_{b}\dot{\boldsymbol{R}}(\tau)}
+	+{^{r}\dot{\boldsymbol{p}}_t(\tau)}
+	-{^{b}_{r}\boldsymbol{R}^\top}\cdot\liehat{{^{b}\boldsymbol{p}_{r}}}\cdot{^{b_0}_{b}\boldsymbol{R}^\top(\tau)}\cdot{^{b_0}_{b}\dot{\boldsymbol{R}}(\tau)}
+	+{^{b}_{r}\boldsymbol{R}^\top}\cdot{^{b_0}_{b}\boldsymbol{R}^\top(\tau)}\cdot{^{b_0}\dot{\boldsymbol{p}}_{b}(\tau)}
+	\end{equation}
+	thus, the velocity of target $\{t\}$ with respect to the radar $\{r\}$ parameterized in $\{r\}$ could be expressed as:
+	\begin{equation}
+	{^{r}\dot{\boldsymbol{p}}_t(\tau)}=
+	\liehat{{^{r}\boldsymbol{p}_t(\tau)}}\cdot{^{b}_{r}\boldsymbol{R}^\top}\cdot{^{b_0}_{b}\boldsymbol{R}^\top(\tau)}\cdot{^{b_0}_{b}\dot{\boldsymbol{R}}(\tau)}
+	+{^{b}_{r}\boldsymbol{R}^\top}\cdot\liehat{{^{b}\boldsymbol{p}_{r}}}\cdot{^{b_0}_{b}\boldsymbol{R}^\top(\tau)}\cdot{^{b_0}_{b}\dot{\boldsymbol{R}}(\tau)}
+	-{^{b}_{r}\boldsymbol{R}^\top}\cdot{^{b_0}_{b}\boldsymbol{R}^\top(\tau)}\cdot{^{b_0}\dot{\boldsymbol{p}}_{b}(\tau)}
+	\end{equation}
+	
+	\section{\normf{Radar Static Measurement (V2)}}
+	\begin{equation}
+	{^{b_0}{\boldsymbol{p}}_r(\tau)}={^{b_0}_{b}\boldsymbol{R}(\tau)}\cdot{^{b}{\boldsymbol{p}}_r}+{^{b_0}{\boldsymbol{p}}_b(\tau)}
+	\end{equation}
+	\begin{equation}
+	{^{b_0}\dot{\boldsymbol{p}}_r(\tau)}=-\liehat{{^{b_0}_{b}\boldsymbol{R}(\tau)}\cdot{^{b}{\boldsymbol{p}}_r}}\cdot{^{b_0}_{b}\dot{\boldsymbol{R}}(\tau)}
+	+{^{b_0}\dot{\boldsymbol{p}}_b(\tau)}
+	\end{equation}
+	thus, the velocity of radar $\{r\}$ with respect to the frame $\{b_0\}$ parameterized in $\{r\}$ could be expressed as:
+	\begin{equation}
+	{^{b}_{r}\boldsymbol{R}^\top}\cdot{^{b_0}_{b}\boldsymbol{R}^\top}\cdot{^{b_0}\dot{\boldsymbol{p}}_r(\tau)}=
+	{^{b}_{r}\boldsymbol{R}^\top}\cdot{^{b_0}_{b}\boldsymbol{R}^\top}\cdot
+	\left(
+	-\liehat{{^{b_0}_{b}\boldsymbol{R}(\tau)}\cdot{^{b}{\boldsymbol{p}}_r}}\cdot{^{b_0}_{b}\dot{\boldsymbol{R}}(\tau)}
+	+{^{b_0}\dot{\boldsymbol{p}}_b(\tau)}
+	\right) 
+	\end{equation}
+	actually, by introducing $\liehat{{^{r}\boldsymbol{p}_t(\tau)}}$, we have:
+	\begin{equation}
+	\liehat{{^{r}\boldsymbol{p}_t(\tau)}}\cdot{^{b}_{r}\boldsymbol{R}^\top}\cdot{^{b_0}_{b}\boldsymbol{R}^\top}\cdot{^{b_0}\dot{\boldsymbol{p}}_r(\tau)}=-\liehat{{^{r}\boldsymbol{p}_t(\tau)}}\cdot{^{r}\dot{\boldsymbol{p}}_t(\tau)}
+	\end{equation}
+	
+	\section{\normf Preintegration}
+	\normf
+	IMU的坐标系记为$\coordframe{b}$，世界坐标系记为$\coordframe{w}$，则有：
+	\begin{equation}
+	\begin{aligned}
+	\bsm{a}_\tau&=\rotation{b_\tau}{w} ^\top\cdot\left(
+	\linacce{b_\tau}{w}-\gravity{w}
+	\right) 
+	\\
+	\bsm{\omega}_\tau&=\rotation{b_\tau}{w} ^\top\cdot\angvel{b_\tau}{w}
+	\end{aligned}
+	\end{equation}
+	通过变换，得到：
+	\begin{equation}
+	\begin{aligned}
+	\linacce{b_\tau}{w}&=\rotation{b_\tau}{w} \cdot \bsm{a}_\tau+\gravity{w}
+	\\
+	\angvel{b_\tau}{w}&=\rotation{b_\tau}{w}\cdot\bsm{\omega}_\tau
+	\end{aligned}
+	\end{equation}
+	通过积分得到：
+	\begin{equation}
+	\begin{aligned}
+		\linvel{b_{k+1}}{w}&=\linvel{b_{k}}{w}+\gravity{w}\cdot\Delta\tau
+		+\int_{\tau_{k}}^{\tau_{k+1}}
+		\rotation{b_t}{w} \cdot \bsm{a}_t \cdot dt
+		\\
+		\translation{b_{k+1}}{w}&=\translation{b_{k}}{w}
+		+\linvel{b_{k}}{w}\cdot\Delta\tau
+		+\frac{1}{2}\cdot\gravity{w}\cdot\Delta\tau^2+\iint_{\tau_{k}}^{\tau_{k+1}}
+		\rotation{b_t}{w} \cdot \bsm{a}_t \cdot dt^2
+		\\
+		\quaternion{b_{k+1}}{w}&=\quaternion{b_k}{w}\circ
+		 \int_{\tau_{k}}^{\tau_{k+1}}\frac{1}{2}\cdot\boldsymbol{\Omega}(\bsm{\omega}_t)\cdot\quaternion{b_t}{b_k}\cdot dt
+	\end{aligned}
+	\end{equation}
+	其中：
+	\begin{equation}
+	\boldsymbol{\Omega}(\bsm{\omega}_t)=\begin{bmatrix}
+	-\liehat{\bsm{\omega}_t} & \bsm{\omega}_t\\
+	-\bsm{\omega}_t^\top & 0
+	\end{bmatrix}
+	\end{equation}
+	将参考坐标系变换到$\coordframe{b_k}$，得到：
+	\begin{equation}
+	\begin{aligned}
+		\rotation{b_{k}}{w}^\top\cdot\linvel{b_{k+1}}{w}&=\rotation{b_{k}}{w}^\top\cdot\left( \linvel{b_{k}}{w}+\gravity{w}\cdot\Delta\tau\right) 
+		+\int_{\tau_{k}}^{\tau_{k+1}}
+		\rotation{b_t}{b_{k}} \cdot \bsm{a}_t \cdot dt
+		\\
+		\rotation{b_{k}}{w}^\top\cdot\translation{b_{k+1}}{w}&=\rotation{b_{k}}{w}^\top\cdot\left( \translation{b_{k}}{w}
+		+\linvel{b_{k}}{w}\cdot\Delta\tau
+		+\frac{1}{2}\cdot\gravity{w}\cdot\Delta\tau^2\right) +\iint_{\tau_{k}}^{\tau_{k+1}}
+		\rotation{b_t}{b_{k}} \cdot \bsm{a}_t \cdot dt^2
+		\\
+		\left( \quaternion{b_k}{w}\right) ^{-1}\circ\quaternion{b_{k+1}}{w}&=
+		 \int_{\tau_{k}}^{\tau_{k+1}}\frac{1}{2}\cdot\boldsymbol{\Omega}(\bsm{\omega}_t)\cdot\quaternion{b_t}{b_k}\cdot dt
+	\end{aligned}
+	\end{equation}
+	得到预积分项，并带入带有噪声的观测值：
+	\begin{equation}
+	\begin{aligned}
+	\bsm{\alpha}_{b_{k+1}}^{b_k}&=\iint_{\tau_{k}}^{\tau_{k+1}}
+				\rotation{b_t}{b_{k}} \cdot \left( \hat{\bsm{a}}_t-\bsm{b}_{a_t}-\bsm{n}_a\right) \cdot dt^2
+				\\
+	\bsm{\beta}_{b_{k+1}}^{b_k}&=\int_{\tau_{k}}^{\tau_{k+1}}
+			\rotation{b_t}{b_{k}} \cdot \left( \hat{\bsm{a}}_t-\bsm{b}_{a_t}-\bsm{n}_a\right)  \cdot dt
+			\\
+	\bsm{\gamma}_{b_{k+1}}^{b_k}&=\int_{\tau_{k}}^{\tau_{k+1}}\frac{1}{2}\cdot\boldsymbol{\Omega}(\hat{\bsm{\omega}}_t-\bsm{b}_{g_t}-\bsm{n}_g)\cdot\quaternion{b_t}{b_k}\cdot dt
+	\end{aligned}
+	\end{equation}
+	数值积分使用midpoint进行：
+	\begin{equation}
+	\begin{aligned}
+	\bsm{\alpha}_{b_{j+1}}^{b_k}&=\bsm{\alpha}_{b_{j}}^{b_k}+\bsm{\beta}_{b_{j}}^{b_k}\cdot\delta \tau+\frac{1}{2}\cdot\rotation{b_j}{b_k}\cdot\left( \hat{\bsm{a}}_j-\bsm{b}_{a_j}\right) \cdot\delta \tau^2
+	\\
+	\bsm{\beta}_{b_{j+1}}^{b_k}&=\bsm{\beta}_{b_{j}}^{b_k}+\rotation{b_j}{b_k}\cdot\left( \hat{\bsm{a}}_j-\bsm{b}_{a_j}\right) \cdot\delta \tau
+	\\
+	\bsm{\gamma}_{b_{j+1}}^{b_k}&=\bsm{\gamma}_{b_{j}}^{b_k}\circ\begin{bmatrix}
+	1\\\begin{aligned}
+	\frac{1}{2}\cdot\left(\hat{\bsm{\omega}}_j-\bsm{b}_{g_j} \right) \cdot\delta \tau
+	\end{aligned}
+	\end{bmatrix}
+	\end{aligned}
+	\end{equation}
+	推导方差传播模型：
+	\begin{equation}
+	\begin{bmatrix}
+	\delta\dot{\bsm{\alpha}}_{b_{t}}^{b_k}
+	\\
+	\delta\dot{\bsm{\beta}}_{b_{t}}^{b_k}
+	\\
+	\delta\dot{\bsm{\theta}}_{b_{t}}^{b_k}
+	\\
+	\delta\dot{\bsm{b}}_{a_{t}}
+	\\
+	\delta\dot{\bsm{b}}_{g_{t}}
+	\end{bmatrix}=
+	\begin{bmatrix}
+	0&\bsm{I}_3&0&0&0\\
+	0&0&-\rotation{b_t}{b_{k}}\cdot\liehat{\hat{\bsm{a}}_t-\bsm{b}_{a_t}}&-\rotation{b_t}{b_{k}}&0\\
+	0&0&-\liehat{\hat{\bsm{\omega}}_t-\bsm{b}_{g_t}}&0&-\bsm{I}_3\\
+	0&0&0&0&0\\0&0&0&0&0
+	\end{bmatrix}
+	\begin{bmatrix}
+	\delta{\bsm{\alpha}}_{b_{t}}^{b_k}
+	\\
+	\delta{\bsm{\beta}}_{b_{t}}^{b_k}
+	\\
+	\delta{\bsm{\theta}}_{b_{t}}^{b_k}
+	\\
+	\delta{\bsm{b}}_{a_{t}}
+	\\
+	\delta{\bsm{b}}_{g_{t}}
+	\end{bmatrix}+
+	\begin{bmatrix}
+	0&0&0&0\\
+	-\rotation{b_t}{b_{k}}&0&0&0\\
+	0&-\bsm{I}_3&0&0\\
+	0&0&\bsm{I}_3&0\\
+	0&0&0&\bsm{I}_3
+	\end{bmatrix}\begin{bmatrix}
+	\bsm{n}_a\\\bsm{n}_g\\\bsm{n}_{b_a}\\\bsm{n}_{b_g}
+	\end{bmatrix}=\bsm{F}_t\delta\bsm{z}^{b_k}_{t}+\bsm{G}_{t}\bsm{n}_{t}
+	\end{equation}
+	注意，对旋转矩阵的求导为右扰动，所以对应的姿态更新为：
+	\begin{equation}
+	\bsm{\gamma}_{b_{t}}^{b_k}=\bsm{\gamma}_{b_{t}}^{b_k}\circ\delta\bsm{\gamma}
+	\end{equation}
+	进行离散化，得到：
+	\begin{equation}
+	\bsm{z}^{b_k}_{t_2}=\left( \bsm{I}_5+\bsm{F}_t\cdot\delta\tau\right)\cdot\bsm{z}^{b_k}_{t_1} +
+	\int_{0}^{\delta \tau}\bsm{F}_t\cdot\bsm{G}_t\cdot\bsm{Q}\cdot\bsm{G}_t^\top\cdot\bsm{F}_t^\top
+	\end{equation}
+	之后进行滤波即可。
+	\begin{equation}
+	\begin{bmatrix}
+	\delta\dot{\bsm{\alpha}}_{b_{t}}^{b_k}
+	\\
+	\delta\dot{\bsm{\theta}}_{b_{t}}^{b_k}
+	\\
+	\delta\dot{\bsm{\beta}}_{b_{t}}^{b_k}
+	\\
+	\delta\dot{\bsm{b}}_{a_{t}}
+	\\
+	\delta\dot{\bsm{b}}_{g_{t}}
+	\end{bmatrix}=
+	\begin{bmatrix}
+	0&0&\bsm{I}_3&0&0\\
+	0&-\liehat{\hat{\bsm{\omega}}_t-\bsm{b}_{g_t}}&0&0&-\bsm{I}_3\\
+	0&-\rotation{b_t}{b_{k}}\cdot\liehat{\hat{\bsm{a}}_t-\bsm{b}_{a_t}}&0&-\rotation{b_t}{b_{k}}&0\\
+	0&0&0&0&0\\0&0&0&0&0
+	\end{bmatrix}
+	\begin{bmatrix}
+	\delta{\bsm{\alpha}}_{b_{t}}^{b_k}
+	\\
+	\delta{\bsm{\theta}}_{b_{t}}^{b_k}
+	\\
+	\delta{\bsm{\beta}}_{b_{t}}^{b_k}
+	\\
+	\delta{\bsm{b}}_{a_{t}}
+	\\
+	\delta{\bsm{b}}_{g_{t}}
+	\end{bmatrix}+
+	\begin{bmatrix}
+	0&0&0&0\\
+	-\rotation{b_t}{b_{k}}&0&0&0\\
+	0&-\bsm{I}_3&0&0\\
+	0&0&\bsm{I}_3&0\\
+	0&0&0&\bsm{I}_3
+	\end{bmatrix}\begin{bmatrix}
+	\bsm{n}_a\\\bsm{n}_g\\\bsm{n}_{b_a}\\\bsm{n}_{b_g}
+	\end{bmatrix}
+	\end{equation}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+\end{document}
+

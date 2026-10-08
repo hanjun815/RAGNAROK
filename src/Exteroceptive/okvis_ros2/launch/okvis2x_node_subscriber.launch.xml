@@ -1,0 +1,98 @@
+<launch>
+    <arg name="rpg" default="false" />
+    <arg name="rgb" default="false" />
+    <arg name="config_filename" default="" />
+    <arg name="se_config_filename" default="" />
+    <arg name="vio" default="false"/>
+    <arg name="lidar" default="false"/>
+    <arg name="depth_image" default="false"/>
+    <arg name="stereo_network" default="false"/>
+    <arg name="depth_fusion" default="false"/>
+    <arg name="csv_path" default="/root/code/RAGNAROK/results"/>
+    <arg name="mesh_cutoff_z" default="2.5"/>
+    <arg name="save_submap_meshes" default="true"/>
+    <arg name="rviz" default="true"/>
+    <!-- Final BA and mesh saving can take longer than launch's default 5 seconds. -->
+    <arg name="sigterm_timeout" default="300.0"/>
+    <arg name="mesh" default="realsense.dae"/>
+    <!-- Standalone OKVIS launch. Use ragnarok.launch.py to start GaRLILEO automatically after GPU warmup. -->
+    <set_env name="OMP_NUM_THREADS" value="2"/>
+    <!-- Add mesh for RVIZ visualization. In case you are using a different mesh, you will have to adjust
+         the IMU-to-body extrinsics (T_BS) in the okvis2 config file -->
+
+    <!-- Pure VIO subscriber node (camera + IMU only, no depth/lidar/network) -->
+    <node pkg="okvis" exec="okvis2x_node_subscriber" name="okvis" namespace="okvis" if="$(var vio)">
+        <param name="config_filename" value="$(var config_filename)"/>
+        <param name="se_config_filename" value="$(var se_config_filename)"/>
+        <param name="csv_path" value="$(var csv_path)"/>
+        <param name="mesh_cutoff_z" type="float" value="$(var mesh_cutoff_z)"/>
+        <param name="save_submap_meshes" value="$(var save_submap_meshes)"/>
+        <param name="mesh_file" value="file://$(find-pkg-share okvis)/resources/meshes/$(var mesh)"/>
+        <remap from="cam0/image_raw" to="/camera/camera/infra1/image_rect_raw"/>
+        <remap from="cam1/image_raw" to="/camera/camera/infra2/image_rect_raw"/>
+        <remap from="imu0" to="/imu/data"/>
+        <remap from="radar0" to="/ti_mmwave_0/radar_scan_pcl"/>
+        <remap from="radar1" to="/ti_mmwave_1/radar_scan_pcl"/>
+    </node>
+
+    <node pkg="okvis" exec="okvis2x_node_subscriber" name="okvis" namespace="okvis" if="$(var depth_image)">
+        <param name="config_filename" value="$(var config_filename)"/>
+        <param name="se_config_filename" value="$(var se_config_filename)"/>
+        <param name="csv_path" value="$(var csv_path)"/>
+        <param name="mesh_cutoff_z" type="float" value="$(var mesh_cutoff_z)"/>
+        <param name="save_submap_meshes" value="$(var save_submap_meshes)"/>
+        <param name="mesh_file" value="file://$(find-pkg-share okvis)/resources/meshes/$(var mesh)"/>
+        <remap from="/okvis/cam0/image_raw" to="/rmf_owl/cam0/image_raw"/>
+        <remap from="/okvis/cam1/image_raw" to="/rmf_owl/cam1/image_raw"/>
+        <remap from="/okvis/depth0/image_raw" to="/rmf_owl/depth0/depth_image"/>
+        <remap from="/okvis/cam2/image_raw" to="/rmf_owl/rgb1/image_raw"/>
+        <remap from="/okvis/imu0" to="/rmf_owl/okvis_imu0"/>
+    </node>
+
+    <node pkg="okvis" exec="okvis2x_node_subscriber" name="okvis" namespace="okvis" if="$(var lidar)">
+        <param name="config_filename" value="$(var config_filename)"/>
+        <param name="se_config_filename" value="$(var se_config_filename)"/>
+        <param name="csv_path" value="$(var csv_path)"/>
+        <param name="mesh_cutoff_z" type="float" value="$(var mesh_cutoff_z)"/>
+        <param name="save_submap_meshes" value="$(var save_submap_meshes)"/>
+        <param name="mesh_file" value="file://$(find-pkg-share okvis)/resources/meshes/$(var mesh)"/>
+        <remap from="/okvis/cam0/image_raw" to="/alphasense/cam0/image_raw"/>
+        <remap from="/okvis/cam1/image_raw" to="/alphasense/cam1/image_raw"/>
+        <remap from="/okvis/cam2/image_raw" to="/alphasense/cam2/image_raw"/>
+        <remap from="/okvis/cam3/image_raw" to="/alphasense/cam3/image_raw"/>
+        <remap from="/okvis/cam4/image_raw" to="/alphasense/cam4/image_raw"/>
+        <remap from="/okvis/lidar" to="/hesai/pandar"/>
+        <remap from="/okvis/imu0" to="/alphasense/imu"/>
+    </node>
+
+    <node pkg="okvis" exec="okvis2x_stereo_network_node_subscriber" name="okvis" namespace="okvis" if="$(var stereo_network)">
+        <param name="config_filename" value="$(var config_filename)"/>
+        <param name="se_config_filename" value="$(var se_config_filename)"/>
+        <param name="csv_path" value="$(var csv_path)"/>
+        <param name="mesh_cutoff_z" type="float" value="$(var mesh_cutoff_z)"/>
+        <param name="save_submap_meshes" value="$(var save_submap_meshes)"/>
+        <param name="mesh_file" value="file://$(find-pkg-share okvis)/resources/meshes/$(var mesh)"/>
+        <remap from="cam0/image_raw" to="/camera/camera/infra1/image_rect_raw"/>
+        <remap from="cam1/image_raw" to="/camera/camera/infra2/image_rect_raw"/>
+        <remap from="imu0" to="/imu/data"/>
+        <remap from="radar0" to="/ti_mmwave_0/radar_scan_pcl"/>
+        <remap from="radar1" to="/ti_mmwave_1/radar_scan_pcl"/>
+    </node>
+
+    <!-- Depth-fusion OKVIS node -->
+    <node pkg="okvis" exec="okvis2x_depthfusion_network_node_subscriber" name="okvis" namespace="okvis" if="$(var depth_fusion)">
+        <param name="config_filename" value="$(var config_filename)"/>
+        <param name="se_config_filename" value="$(var se_config_filename)"/>
+        <param name="csv_path" value="$(var csv_path)"/>
+        <param name="mesh_cutoff_z" type="float" value="$(var mesh_cutoff_z)"/>
+        <param name="save_submap_meshes" value="$(var save_submap_meshes)"/>
+        <param name="mesh_file" value="file://$(find-pkg-share okvis)/resources/meshes/$(var mesh)"/>
+        <remap from="cam0/image_raw" to="/camera/camera/infra1/image_rect_raw"/>
+        <remap from="cam1/image_raw" to="/camera/camera/infra2/image_rect_raw"/>
+        <remap from="imu0" to="/imu/data"/>
+        <remap from="radar0" to="/ti_mmwave_0/radar_scan_pcl"/>
+        <remap from="radar1" to="/ti_mmwave_1/radar_scan_pcl"/>
+    </node>
+
+    <node pkg="rviz2" exec="rviz2" name="rviz2" namespace="okvis" args="-d $(find-pkg-share okvis)/config/rviz2/rviz2_okvis2x_config.rviz" if="$(var rviz)"/>
+</launch>

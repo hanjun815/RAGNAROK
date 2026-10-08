@@ -1,0 +1,70 @@
+pipelines:
+  branches:
+    '{master, devel}':
+    - step:
+        name: Ubuntu 16.04
+        image: sotirisp/supereight-ci:16.04
+        script:
+          # Build and test in debug mode
+          - mkdir -p builddebug && cd builddebug
+          - GTEST_ROOT=/usr/local/src/googletest/googletest/ cmake -DCMAKE_BUILD_TYPE=Debug ..
+          - make -j
+          - make -j test
+          - cd ..
+          # Build and test in release mode
+          - mkdir -p buildrelease && cd buildrelease
+          - GTEST_ROOT=/usr/local/src/googletest/googletest/ cmake -DCMAKE_BUILD_TYPE=Release ..
+          - make -j
+          - make -j test
+          - make install
+          - cd ..
+          # Test correct installation
+          - mkdir -p buildtestinstall && cd buildtestinstall
+          - cmake -DCMAKE_BUILD_TYPE=Debug ../test/test_install
+          - make -j
+          - make -j test
+    - step:
+        name: Ubuntu 18.04
+        image: sotirisp/supereight-ci:18.04
+        script:
+          # Build and test in debug mode
+          - mkdir -p builddebug && cd builddebug
+          - GTEST_ROOT=/usr/local/src/googletest/googletest/ cmake -DCMAKE_BUILD_TYPE=Debug ..
+          - make -j
+          - make -j test
+          - cd ..
+          # Build and test in release mode
+          - mkdir -p buildrelease && cd buildrelease
+          - GTEST_ROOT=/usr/local/src/googletest/googletest/ cmake -DCMAKE_BUILD_TYPE=Release ..
+          - make -j
+          - make -j test
+          - make install
+          - cd ..
+          # Test correct installation
+          - mkdir -p buildtestinstall && cd buildtestinstall
+          - cmake -DCMAKE_BUILD_TYPE=Debug ../test/test_install
+          - make -j
+          - make -j test
+    - step:
+        name: Ubuntu 20.04
+        image: sotirisp/supereight-ci:20.04
+        script:
+          # Build and test in debug mode
+          - mkdir -p builddebug && cd builddebug
+          - GTEST_ROOT=/usr/local/src/googletest/googletest/ cmake -DCMAKE_BUILD_TYPE=Debug ..
+          - make -j
+          - make -j test
+          - cd ..
+          # Build and test in release mode
+          - mkdir -p buildrelease && cd buildrelease
+          - GTEST_ROOT=/usr/local/src/googletest/googletest/ cmake -DCMAKE_BUILD_TYPE=Release ..
+          - make -j
+          - make -j test
+          - make install
+          - cd ..
+          # Test correct installation
+          - mkdir -p buildtestinstall && cd buildtestinstall
+          - cmake -DCMAKE_BUILD_TYPE=Debug ../test/test_install
+          - make -j
+          - make -j test
+
