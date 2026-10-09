@@ -1,7 +1,7 @@
 <h1 align="center"><b><em>RAGNAROK</em></b>: Radar-Aided Gravity-Normalized Alignment for Robust Open Keyframe-based Radar-Visual-Kinematic-Inertial SLAM</h1>
 
 <p align="center">
-  <a href="https://hanjun815.github.io/assets/pdf/kim2026ragnarok.pdf"><img src="fig/buttons/paper.svg" alt="Paper" /></a>&nbsp;&nbsp;&nbsp;
+  <a href="https://arxiv.org/pdf/2610.11531"><img src="fig/buttons/paper.svg" alt="Paper" /></a>&nbsp;&nbsp;&nbsp;
   <a href="https://ragnarok-rvki-slam.github.io/RAGNAROK/"><img src="fig/buttons/project_page.svg" alt="Project Page" /></a>&nbsp;&nbsp;&nbsp;
   <a href="https://www.youtube.com/watch?v=qD49Pis8DZ4"><img src="fig/buttons/youtube.svg" alt="YouTube" /></a>&nbsp;&nbsp;&nbsp;
   <a href="https://docs.google.com/forms/d/e/1FAIpQLSfjRVYzPaouFmoXknAHRnoTL55A_Lar1E34QhtOMBsD06BoZQ/viewform"><img src="fig/buttons/dataset.svg" alt="Dataset" /></a>
